@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Gold Transactions
+    match /goldTransactions/{txId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(txId);
+      allow delete: if isSignedIn();
+    }
+
+    // Restaurant Transactions
+    match /restaurantTransactions/{txId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(txId);
+      allow delete: if isSignedIn();
+    }
+
+    // Diverse Services
+    match /diverseServices/{serviceId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(serviceId);
+      allow delete: if isSignedIn();
+    }
+
+    // Foundation Projects
+    match /foundationProjects/{projectId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(projectId);
+      allow delete: if isSignedIn();
+    }
+
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId);
+      allow update, delete: if false;
+    }
+  }
+}

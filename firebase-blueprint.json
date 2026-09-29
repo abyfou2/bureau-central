@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "GoldTransaction": {
+      "title": "GoldTransaction",
+      "description": "Transaction d'achat ou de vente d'or en lingot",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["achat", "vente"] },
+        "weightKg": { "type": "number" },
+        "purity": { "type": "string", "maxLength": 10 },
+        "pricePerGram": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "clientOrSupplier": { "type": "string", "maxLength": 150 },
+        "date": { "type": "string", "maxLength": 20 },
+        "status": { "type": "string", "enum": ["Validé", "En attente", "Clôturé"] }
+      },
+      "required": ["type", "weightKg", "purity", "pricePerGram", "totalAmount", "clientOrSupplier", "date", "status"]
+    },
+    "RestaurantTransaction": {
+      "title": "RestaurantTransaction",
+      "description": "Recette ou dépense du restaurant (boissons, salaires, stock)",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["recette", "depense"] },
+        "category": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 250 },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["type", "category", "description", "amount", "date"]
+    },
+    "DiverseServiceRequest": {
+      "title": "DiverseServiceRequest",
+      "description": "Demande de services divers et facturation",
+      "type": "object",
+      "properties": {
+        "clientName": { "type": "string", "maxLength": 150 },
+        "serviceType": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 300 },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "maxLength": 30 },
+        "date": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["clientName", "serviceType", "description", "amount", "status", "date"]
+    },
+    "FoundationProject": {
+      "title": "FoundationProject",
+      "description": "Projet humanitaire de la Fondation Ilyassa",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 400 },
+        "budget": { "type": "number" },
+        "disbursed": { "type": "number" },
+        "beneficiaries": { "type": "integer" },
+        "status": { "type": "string", "maxLength": 30 },
+        "category": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["title", "description", "budget", "disbursed", "beneficiaries", "status", "category"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Journal d'audit et de sécurité",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "maxLength": 30 },
+        "userName": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "maxLength": 50 },
+        "action": { "type": "string", "maxLength": 250 },
+        "department": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["timestamp", "userName", "role", "action", "department"]
+    }
+  },
+  "firestore": {
+    "/goldTransactions/{txId}": {
+      "schema": "GoldTransaction",
+      "description": "Collection des transactions d'or"
+    },
+    "/restaurantTransactions/{txId}": {
+      "schema": "RestaurantTransaction",
+      "description": "Collection des recettes et dépenses du restaurant"
+    },
+    "/diverseServices/{serviceId}": {
+      "schema": "DiverseServiceRequest",
+      "description": "Collection des services divers"
+    },
+    "/foundationProjects/{projectId}": {
+      "schema": "FoundationProject",
+      "description": "Collection des projets de la fondation"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Collection des journaux d'audit"
+    }
+  }
+}

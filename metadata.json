@@ -1,0 +1,8 @@
+{
+  "name": "BureauCentral - Gestion Multi-Services",
+  "description": "Application web de gestion centralisée pour un bureau multi-services : Bureau d'Or, Restaurant, Services Divers, et Fondation Ilyassa avec RBAC et vue PDG.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
