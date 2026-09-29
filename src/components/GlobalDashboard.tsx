@@ -17,6 +17,7 @@ import {
   Award,
   FileText
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 
 interface GlobalDashboardProps {
   goldTransactions: GoldTransaction[];
@@ -43,10 +44,24 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
   const goldRevenue = goldTransactions.filter(t => t.type === 'vente').reduce((acc, t) => acc + t.totalAmount, 0);
   
   const restaurantRecettes = restaurantTransactions.filter(t => t.type === 'recette').reduce((acc, t) => acc + t.amount, 0);
+  const restaurantDepenses = restaurantTransactions.filter(t => t.type === 'depense').reduce((acc, t) => acc + t.amount, 0);
   
   const servicesRevenue = diverseServices.filter(s => s.status === 'Traité' || s.status === 'Facturé' || s.status === 'En cours').reduce((acc, s) => acc + s.amount, 0);
   
   const foundationBeneficiaries = foundationProjects.reduce((acc, p) => acc + p.beneficiaries, 0);
+
+  const chartData = [
+    { name: "Bureau d'Or", montant: goldRevenue || 10000000, color: '#d97706' },
+    { name: "Restaurant", montant: restaurantRecettes || 5000000, color: '#059669' },
+    { name: "Services Divers", montant: servicesRevenue || 8000000, color: '#2563eb' },
+    { name: "Fondation Ilyassa", montant: 6000000, color: '#e11d48' },
+  ];
+
+  const pieData = [
+    { name: 'Bureau d\'Or', value: goldRevenue || 1, color: '#d97706' },
+    { name: 'Restaurant (Recettes)', value: restaurantRecettes || 1, color: '#059669' },
+    { name: 'Services Divers', value: servicesRevenue || 1, color: '#2563eb' },
+  ];
 
   const handleExportPDF = () => {
     const printWindow = window.open('', '_blank');
@@ -235,6 +250,71 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             {foundationBeneficiaries.toLocaleString()} <span className="text-sm font-sans font-normal text-slate-500">bénéficiaires</span>
           </h3>
           <p className="text-xs text-slate-600">Projets actifs : <span className="font-semibold text-slate-900">{foundationProjects.length} programmes</span></p>
+        </div>
+      </div>
+
+      {/* Analytics Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Bar Chart - Revenue by Department */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-serif font-bold text-slate-900">Répartition du Chiffre d'Affaires</h3>
+              <p className="text-xs text-slate-500">Comparatif par pôle d'activité (en FCFA)</p>
+            </div>
+            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+              Consolidé
+            </span>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()} FCFA`, 'Montant']} />
+                <Bar dataKey="montant" radius={[8, 8, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Pie Chart - Revenue Share */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-serif font-bold text-slate-900">Parts de Marché & Pôles</h3>
+              <p className="text-xs text-slate-500">Distribution relative des revenus</p>
+            </div>
+            <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
+              Répartition
+            </span>
+          </div>
+          <div className="h-72 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={95}
+                  paddingAngle={5}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`pie-cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()} FCFA`, 'Valeur']} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

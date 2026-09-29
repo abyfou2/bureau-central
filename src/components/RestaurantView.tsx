@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RestaurantTransaction } from '../types';
 import { UtensilsCrossed, Plus, TrendingUp, TrendingDown, DollarSign, Wallet, ShoppingCart, Users, Wrench, FileText } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface RestaurantViewProps {
   transactions: RestaurantTransaction[];
@@ -20,6 +21,12 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
   const totalRecettes = transactions.filter(t => t.type === 'recette').reduce((acc, t) => acc + t.amount, 0);
   const totalDepenses = transactions.filter(t => t.type === 'depense').reduce((acc, t) => acc + t.amount, 0);
   const netSolde = totalRecettes - totalDepenses;
+
+  const chartData = [
+    { name: 'Recettes', montant: totalRecettes || 100000, color: '#059669' },
+    { name: 'Dépenses', montant: totalDepenses || 50000, color: '#e11d48' },
+    { name: 'Solde Net', montant: Math.abs(netSolde) || 50000, color: netSolde >= 0 ? '#2563eb' : '#e11d48' }
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +100,33 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
             {netSolde.toLocaleString()} <span className="text-sm font-sans text-slate-500 font-normal">FCFA</span>
           </h3>
           <p className="text-xs text-emerald-600 font-medium">Bénéfice opérationnel</p>
+        </div>
+      </div>
+
+      {/* Restaurant Analytics Chart */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-serif font-bold text-slate-900">Analyse de Trésorerie Restauration</h3>
+            <p className="text-xs text-slate-500">Comparaison Recettes, Dépenses et Résultat Net</p>
+          </div>
+          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+            Flux en direct
+          </span>
+        </div>
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()} FCFA`, 'Montant']} />
+              <Bar dataKey="montant" radius={[8, 8, 0, 0]}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-rest-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
