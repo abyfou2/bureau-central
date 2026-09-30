@@ -25,7 +25,7 @@ import { UserManualModal } from './components/UserManualModal';
 import { TreasuryModal } from './components/TreasuryModal';
 import { ApprovalConfigModal } from './components/ApprovalConfigModal';
 import { LoginView } from './components/LoginView';
-import { Lock } from 'lucide-react';
+import { Lock, Database, Upload } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -42,19 +42,6 @@ export default function App() {
     password: '1234'
   };
   const [users, setUsers] = useState<User[]>(() => {
-    const savedVersion = localStorage.getItem('bureau_app_version');
-    if (savedVersion !== '2.12') {
-      localStorage.setItem('bureau_app_version', '2.12');
-      localStorage.removeItem('bureau_users');
-      localStorage.removeItem('bureau_gold_transactions');
-      localStorage.removeItem('bureau_gold_expenses');
-      localStorage.removeItem('bureau_restaurant_transactions');
-      localStorage.removeItem('bureau_diverse_services');
-      localStorage.removeItem('bureau_diverse_expenses');
-      localStorage.removeItem('bureau_foundation_projects');
-      localStorage.removeItem('bureau_foundation_expenses');
-      return INITIAL_USERS;
-    }
     const saved = localStorage.getItem('bureau_users');
     return saved ? JSON.parse(saved) : INITIAL_USERS;
   });
@@ -132,10 +119,10 @@ export default function App() {
   const [treasuryAccounts, setTreasuryAccounts] = useState<TreasuryAccount[]>(() => {
     const saved = localStorage.getItem('bureau_treasury_accounts');
     return saved ? JSON.parse(saved) : [
-      { id: 'acc-1', department: "Bureau d'Or", accountName: 'Caisse Principale Or & Espèces', balance: 14500000, currency: 'XOF' },
-      { id: 'acc-2', department: 'Restaurant', accountName: 'Compte Recettes Restaurant', balance: 3200000, currency: 'XOF' },
-      { id: 'acc-3', department: 'Services Divers', accountName: 'Caisse Prestations & Consulting', balance: 6800000, currency: 'XOF' },
-      { id: 'acc-4', department: 'Fondation Ilyassa', accountName: 'Fonds Humanitaires & Dons', balance: 9500000, currency: 'XOF' }
+      { id: 'acc-1', department: "Bureau d'Or", accountName: 'Caisse Principale Or & Espèces', balance: 0, currency: 'XOF' },
+      { id: 'acc-2', department: 'Restaurant', accountName: 'Compte Recettes Restaurant', balance: 0, currency: 'XOF' },
+      { id: 'acc-3', department: 'Services Divers', accountName: 'Caisse Prestations & Consulting', balance: 0, currency: 'XOF' },
+      { id: 'acc-4', department: 'Fondation Ilyassa', accountName: 'Fonds Humanitaires & Dons', balance: 0, currency: 'XOF' }
     ];
   });
 
@@ -364,6 +351,63 @@ export default function App() {
     addAuditLog(`Changement de profil utilisateur vers ${user.name} (${user.title})`, 'Global');
   };
 
+  const handleExportBackup = () => {
+    const backupData = {
+      version: '2.13',
+      exportDate: new Date().toISOString(),
+      users,
+      goldTransactions,
+      goldExpenses,
+      restaurantTransactions,
+      diverseServices,
+      diverseExpenses,
+      foundationProjects,
+      foundationExpenses,
+      auditLogs,
+      treasuryAccounts,
+      approvalConfig,
+      notifications
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `bureaucentral_backup_${new Date().toISOString().substring(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addAuditLog("Export de la sauvegarde de la base de données", "Administration");
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileReader = new FileReader();
+    if (e.target.files && e.target.files[0]) {
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target?.result as string);
+          if (parsed.users) setUsers(parsed.users);
+          if (parsed.goldTransactions) setGoldTransactions(parsed.goldTransactions);
+          if (parsed.goldExpenses) setGoldExpenses(parsed.goldExpenses);
+          if (parsed.restaurantTransactions) setRestaurantTransactions(parsed.restaurantTransactions);
+          if (parsed.diverseServices) setDiverseServices(parsed.diverseServices);
+          if (parsed.diverseExpenses) setDiverseExpenses(parsed.diverseExpenses);
+          if (parsed.foundationProjects) setFoundationProjects(parsed.foundationProjects);
+          if (parsed.foundationExpenses) setFoundationExpenses(parsed.foundationExpenses);
+          if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
+          if (parsed.treasuryAccounts) setTreasuryAccounts(parsed.treasuryAccounts);
+          if (parsed.approvalConfig) setApprovalConfig(parsed.approvalConfig);
+          if (parsed.notifications) setNotifications(parsed.notifications);
+
+          alert("Restauration de la base de données effectuée avec succès !");
+          addAuditLog("Restauration de la base de données depuis un fichier de backup", "Administration");
+        } catch (err) {
+          alert("Erreur lors de la lecture du fichier de sauvegarde. Assurez-vous qu'il s'agit d'un fichier JSON valide.");
+        }
+      };
+    }
+  };
+
   const isGlobalUser = currentUser.role === 'pdg' || currentUser.role === 'admin';
   const checkAccess = (tab: string) => {
     if (isGlobalUser) return true;
@@ -546,6 +590,33 @@ export default function App() {
 
                 {activeTab === 'rbac_management' && (
                   <div className="space-y-6">
+                    {/* Database Backup & Restore Card */}
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div>
+                        <h4 className="text-base font-bold font-serif mb-1">Sauvegarde & Restauration de la Base de Données</h4>
+                        <p className="text-xs text-slate-300">Exportez toutes vos données (transactions, caisses, utilisateurs, audits) en un fichier JSON ou restaurez une sauvegarde précédente pour éviter toute perte de données lors des mises à jour.</p>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <button
+                          onClick={handleExportBackup}
+                          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2"
+                        >
+                          <Database className="w-4 h-4" />
+                          <span>Exporter la Sauvegarde (.JSON)</span>
+                        </button>
+                        <label className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer">
+                          <Upload className="w-4 h-4" />
+                          <span>Restaurer une Sauvegarde</span>
+                          <input
+                            type="file"
+                            accept=".json"
+                            onChange={handleImportBackup}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
                     <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex justify-between items-center">
                       <div>
                         <h3 className="text-lg font-bold text-slate-900 font-serif">Matrice des Droits d'Accès (RBAC) & Utilisateurs</h3>
