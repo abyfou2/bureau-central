@@ -275,11 +275,21 @@ export default function App() {
     }
   };
 
+  const handleDeleteRestaurantTransaction = (id: string) => {
+    setRestaurantTransactions(prev => prev.filter(t => t.id !== id));
+    addAuditLog(`Restaurant: Suppression transaction ${id}`, 'Restaurant');
+  };
+
   const handleAddServiceRequest = (req: Omit<DiverseServiceRequest, 'id'>) => {
     const newReq: DiverseServiceRequest = { ...req, id: `dsr-${Date.now()}` };
     setDiverseServices([newReq, ...diverseServices]);
     addAuditLog(`Nouveau dossier service divers: ${req.clientName}`, 'Services diverses');
     updateTreasuryBalance('Services Divers', req.amount);
+  };
+
+  const handleDeleteServiceRequest = (id: string) => {
+    setDiverseServices(prev => prev.filter(r => r.id !== id));
+    addAuditLog(`Services Divers: Suppression dossier ${id}`, 'Services diverses');
   };
 
   const handleAddDiverseExpense = (e: Omit<DiverseServiceExpense, 'id'>) => {
@@ -298,7 +308,22 @@ export default function App() {
   const handleAddFoundationProject = (p: Omit<FoundationProject, 'id'>) => {
     const newProj: FoundationProject = { ...p, id: `fp-${Date.now()}` };
     setFoundationProjects([newProj, ...foundationProjects]);
-    addAuditLog(`Lancement projet humanitaire: ${p.title}`, 'Fondation Ilyassa');
+    // Automatically record as an expense as requested ("les montants saisis soient considérés comme dépenses")
+    const newExp: FoundationExpense = {
+      id: `fexp-${Date.now()}`,
+      category: 'Logistique humanitaire',
+      description: `Projet humanitaire: ${p.title}`,
+      amount: p.budget,
+      date: new Date().toISOString().split('T')[0]
+    };
+    setFoundationExpenses(prev => [newExp, ...prev]);
+    updateTreasuryBalance('Fondation Ilyassa', -p.budget);
+    addAuditLog(`Lancement projet humanitaire et enregistrement dépense: ${p.title} (${p.budget.toLocaleString()} FCFA)`, 'Fondation Ilyassa');
+  };
+
+  const handleDeleteFoundationProject = (id: string) => {
+    setFoundationProjects(prev => prev.filter(p => p.id !== id));
+    addAuditLog(`Fondation Ilyassa: Suppression projet ${id}`, 'Fondation Ilyassa');
   };
 
   const handleAddFoundationExpense = (e: Omit<FoundationExpense, 'id'>) => {
@@ -562,6 +587,7 @@ export default function App() {
                   <RestaurantView
                     transactions={restaurantTransactions}
                     onAddTransaction={handleAddRestaurantTransaction}
+                    onDeleteTransaction={handleDeleteRestaurantTransaction}
                   />
                 )}
 
@@ -571,6 +597,7 @@ export default function App() {
                     expenses={diverseExpenses}
                     onAddRequest={handleAddServiceRequest}
                     onAddExpense={handleAddDiverseExpense}
+                    onDeleteRequest={handleDeleteServiceRequest}
                     onDeleteExpense={handleDeleteDiverseExpense}
                     currentUser={currentUser}
                   />
@@ -583,6 +610,7 @@ export default function App() {
                     donations={foundationDonations}
                     onAddProject={handleAddFoundationProject}
                     onAddExpense={handleAddFoundationExpense}
+                    onDeleteProject={handleDeleteFoundationProject}
                     onDeleteExpense={handleDeleteFoundationExpense}
                     currentUser={currentUser}
                   />

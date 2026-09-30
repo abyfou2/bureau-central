@@ -8,6 +8,7 @@ interface FondationIlyassaViewProps {
   donations: FoundationDonation[];
   onAddProject: (p: Omit<FoundationProject, 'id'>) => void;
   onAddExpense: (e: Omit<FoundationExpense, 'id'>) => void;
+  onDeleteProject?: (id: string) => void;
   onDeleteExpense: (id: string) => void;
   currentUser: User;
 }
@@ -18,6 +19,7 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
   donations,
   onAddProject,
   onAddExpense,
+  onDeleteProject,
   onDeleteExpense,
   currentUser
 }) => {
@@ -134,9 +136,9 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Fonds Décaissés (Projets)</p>
           <h3 className="text-2xl font-bold font-mono tabular-nums text-slate-900 mb-1">
-            {(totalDisbursed / 1000000).toFixed(1)}M <span className="text-sm font-sans font-normal text-slate-500">FCFA</span>
+            {totalDisbursed.toLocaleString()} <span className="text-sm font-sans font-normal text-slate-500">FCFA</span>
           </h3>
-          <p className="text-xs text-slate-500">Sur un budget de {(totalBudget / 1000000).toFixed(1)}M FCFA</p>
+          <p className="text-xs text-slate-500">Sur un budget de {totalBudget.toLocaleString()} FCFA</p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
@@ -170,17 +172,28 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {projects.map((p) => (
-            <div key={p.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 flex flex-col justify-between">
+            <div key={p.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 flex flex-col justify-between relative group">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700">
                     {p.category}
                   </span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    p.status === 'Terminé' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                  }`}>
-                    {p.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      p.status === 'Terminé' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {p.status}
+                    </span>
+                    {onDeleteProject && (
+                      <button
+                        onClick={() => onDeleteProject(p.id)}
+                        className="p-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors"
+                        title="Supprimer le projet"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <h4 className="font-bold text-slate-900 text-base">{p.title}</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">{p.description}</p>
@@ -192,8 +205,8 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
                   <span className="font-bold text-slate-900 font-mono">{p.beneficiaries.toLocaleString()} pers.</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">Budget :</span>
-                  <span className="font-bold text-slate-900 font-mono">{(p.budget / 1000000).toFixed(1)}M FCFA</span>
+                  <span className="text-slate-500">Budget / Dépense :</span>
+                  <span className="font-bold text-slate-900 font-mono">{p.budget.toLocaleString()} FCFA</span>
                 </div>
               </div>
             </div>
@@ -202,8 +215,7 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
       </div>
 
       {/* Expenses Table */}
-      {!isAgent && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
           <div className="p-6 border-b border-slate-200 flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-slate-900">Registre des Dépenses & Charges (Fondation Ilyassa)</h3>
@@ -264,7 +276,6 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
             </table>
           </div>
         </div>
-      )}
 
       {/* Modal Add Project */}
       {showModal && (
@@ -303,7 +314,7 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Bénéficiaires (est.)</label>
                   <input
                     type="number"
-                    step="50"
+                    step="any"
                     min="10"
                     required
                     value={beneficiaries}
@@ -317,7 +328,7 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Budget Total (FCFA)</label>
                 <input
                   type="number"
-                  step="500000"
+                  step="any"
                   min="100000"
                   required
                   value={budget}
@@ -399,7 +410,7 @@ export const FondationIlyassaView: React.FC<FondationIlyassaViewProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Montant (FCFA)</label>
                 <input
                   type="number"
-                  step="10000"
+                  step="any"
                   min="1000"
                   required
                   value={expAmount}

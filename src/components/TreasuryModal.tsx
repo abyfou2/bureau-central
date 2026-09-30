@@ -88,6 +88,7 @@ export const TreasuryModal: React.FC<TreasuryModalProps> = ({
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
+                        step="any"
                         value={editBalance}
                         onChange={(e) => setEditBalance(Number(e.target.value))}
                         className="w-32 px-2.5 py-1 text-xs border border-emerald-500 rounded-lg outline-none font-mono font-bold"

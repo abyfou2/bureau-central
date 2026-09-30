@@ -136,7 +136,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             </div>
             <div class="kpi-card">
               <div class="kpi-title">Services Divers</div>
-              <div class="kpi-value">${(servicesRevenue / 1000000).toFixed(2)}M FCFA</div>
+              <div class="kpi-value">${servicesRevenue.toLocaleString()} FCFA</div>
               <p style="margin: 5px 0 0; font-size: 12px; color: #475569;">Dépenses : ${servicesExpensesAmount.toLocaleString()} FCFA<br><b>Bénéfice Net : ${servicesNetProfit.toLocaleString()} FCFA</b></p>
             </div>
             <div class="kpi-card">

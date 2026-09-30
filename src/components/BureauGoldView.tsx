@@ -463,7 +463,7 @@ export const BureauGoldView: React.FC<BureauGoldViewProps> = ({
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1 font-sans">Poids (gm)</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="any"
                     min="0.01"
                     required
                     value={weightGrams}
@@ -475,7 +475,7 @@ export const BureauGoldView: React.FC<BureauGoldViewProps> = ({
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1 font-sans">Eau (différence)</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="any"
                     min="0.01"
                     required
                     value={eau}
@@ -502,7 +502,7 @@ export const BureauGoldView: React.FC<BureauGoldViewProps> = ({
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1 font-sans">Prix / gramme</label>
                   <input
                     type="number"
-                    step="1"
+                    step="any"
                     required
                     value={cours}
                     onChange={(e) => setCours(parseFloat(e.target.value) || 0)}
@@ -605,7 +605,6 @@ export const BureauGoldView: React.FC<BureauGoldViewProps> = ({
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">Montant (FCFA)</label>
                 <input
                   type="number"
-                  step="1000"
                   min="100"
                   required
                   value={expAmount}

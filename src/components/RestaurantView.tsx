@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { RestaurantTransaction } from '../types';
-import { UtensilsCrossed, Plus, TrendingUp, TrendingDown, DollarSign, Wallet, ShoppingCart, Users, Wrench, FileText } from 'lucide-react';
+import { UtensilsCrossed, Plus, TrendingUp, TrendingDown, DollarSign, Wallet, ShoppingCart, Users, Wrench, FileText, Trash2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface RestaurantViewProps {
   transactions: RestaurantTransaction[];
   onAddTransaction: (t: Omit<RestaurantTransaction, 'id'>) => void;
+  onDeleteTransaction?: (id: string) => void;
 }
 
 export const RestaurantView: React.FC<RestaurantViewProps> = ({
   transactions,
-  onAddTransaction
+  onAddTransaction,
+  onDeleteTransaction
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [type, setType] = useState<'recette' | 'depense'>('recette');
@@ -144,13 +146,14 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
+             <thead>
               <tr className="bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3.5 px-6">Type</th>
                 <th className="py-3.5 px-6">Catégorie</th>
                 <th className="py-3.5 px-6">Description / Détails</th>
                 <th className="py-3.5 px-6">Montant (FCFA)</th>
                 <th className="py-3.5 px-6">Date</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
@@ -170,6 +173,17 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
                     {t.type === 'recette' ? '+' : '-'}{t.amount.toLocaleString()} FCFA
                   </td>
                   <td className="py-4 px-6 text-slate-500 text-xs font-mono">{t.date}</td>
+                  <td className="py-4 px-6 text-right">
+                    {onDeleteTransaction && (
+                      <button
+                        onClick={() => onDeleteTransaction(t.id)}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -238,7 +252,7 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Montant (FCFA)</label>
                 <input
                   type="number"
-                  step="5000"
+                  step="any"
                   value={amount}
                   onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono"

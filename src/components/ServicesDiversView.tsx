@@ -7,6 +7,7 @@ interface ServicesDiversViewProps {
   expenses: DiverseServiceExpense[];
   onAddRequest: (req: Omit<DiverseServiceRequest, 'id'>) => void;
   onAddExpense: (e: Omit<DiverseServiceExpense, 'id'>) => void;
+  onDeleteRequest?: (id: string) => void;
   onDeleteExpense: (id: string) => void;
   currentUser: User;
 }
@@ -16,6 +17,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
   expenses,
   onAddRequest,
   onAddExpense,
+  onDeleteRequest,
   onDeleteExpense,
   currentUser
 }) => {
@@ -120,7 +122,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Chiffre d'Affaires Services</p>
           <h3 className="text-2xl font-bold font-mono tabular-nums text-slate-900 mb-1">
-            {(totalBilled / 1000000).toFixed(2)}M <span className="text-xs font-sans font-normal text-slate-500">FCFA</span>
+            {totalBilled.toLocaleString()} <span className="text-xs font-sans font-normal text-slate-500">FCFA</span>
           </h3>
           <p className="text-xs text-blue-600 font-medium">Total facturé & en cours</p>
         </div>
@@ -172,12 +174,13 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
                 <th className="py-3.5 px-6">Montant (FCFA)</th>
                 <th className="py-3.5 px-6">Date</th>
                 <th className="py-3.5 px-6">Statut</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs">
                     Aucune prestation enregistrée pour le moment.
                   </td>
                 </tr>
@@ -201,6 +204,17 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
                         {r.status}
                       </span>
                     </td>
+                    <td className="py-4 px-6 text-right">
+                      {onDeleteRequest && (
+                        <button
+                          onClick={() => onDeleteRequest(r.id)}
+                          className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors"
+                          title="Supprimer le dossier"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -210,8 +224,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
       </div>
 
       {/* Expenses Table */}
-      {!isAgent && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
           <div className="p-6 border-b border-slate-200 flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-slate-900">Registre des Dépenses & Charges (Services Divers)</h3>
@@ -272,7 +285,6 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
             </table>
           </div>
         </div>
-      )}
 
       {/* Modal Add Request */}
       {showModal && (
@@ -314,7 +326,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Montant (FCFA)</label>
                   <input
                     type="number"
-                    step="50000"
+                    step="any"
                     min="10000"
                     required
                     value={amount}
@@ -397,7 +409,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Montant (FCFA)</label>
                 <input
                   type="number"
-                  step="10000"
+                  step="any"
                   min="1000"
                   required
                   value={expAmount}
