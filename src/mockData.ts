@@ -43,19 +43,7 @@ export const INITIAL_USERS: User[] = [
   }
 ];
 
-export const INITIAL_GOLD_TRANSACTIONS: GoldTransaction[] = [
-  {
-    id: 'gt-1',
-    type: 'achat',
-    weightKg: 0.21591,
-    purity: '22.03K',
-    pricePerGram: 63000,
-    totalAmount: 13600531,
-    clientOrSupplier: 'Moussa',
-    date: '2026-09-29',
-    status: 'Validé'
-  }
-];
+export const INITIAL_GOLD_TRANSACTIONS: GoldTransaction[] = [];
 
 export const INITIAL_RESTAURANT_TRANSACTIONS: RestaurantTransaction[] = [];
 
