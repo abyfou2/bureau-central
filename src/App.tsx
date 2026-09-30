@@ -27,18 +27,19 @@ import { auth } from './firebase';
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const defaultUser: User = INITIAL_USERS[0] || {
-    id: 'u2',
+    id: 'u1',
     name: 'ABYFOU',
     role: 'admin',
     department: 'Global',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    email: 'nasmacharity@gmail.com',
-    title: 'Super Administrateur & RH'
+    email: 'admin@bureaucentral.com',
+    title: 'Super Administrateur & Sécurité',
+    password: '1234'
   };
   const [users, setUsers] = useState<User[]>(() => {
     const savedVersion = localStorage.getItem('bureau_app_version');
-    if (savedVersion !== '2.9') {
-      localStorage.setItem('bureau_app_version', '2.9');
+    if (savedVersion !== '2.10') {
+      localStorage.setItem('bureau_app_version', '2.10');
       localStorage.removeItem('bureau_users');
       localStorage.removeItem('bureau_gold_transactions');
       localStorage.removeItem('bureau_restaurant_transactions');

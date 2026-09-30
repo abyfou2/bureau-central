@@ -238,7 +238,7 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
               type="submit"
               className="w-full py-2 bg-slate-900 text-white font-semibold rounded-lg text-xs hover:bg-slate-800 transition-colors"
             >
-              {editingId ? "Mettre à jour l'utilisateur" : "Enregistrer l'utilisateur"}
+              {editingUserId ? "Mettre à jour l'utilisateur" : "Enregistrer l'utilisateur"}
             </button>
           </form>
         )}
