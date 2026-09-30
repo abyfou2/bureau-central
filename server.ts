@@ -22,7 +22,7 @@ async function startServer() {
   app.post("/api/gemini/analyze", async (req, res) => {
     try {
       const { departmentData, prompt } = req.body;
-      const model = "gemini-3.8-flash";
+      const model = "gemini-2.5-flash";
       
       const systemInstruction = `Tu es le conseiller stratégique et financier IA pour "BureauCentral", un bureau multi-services de premier plan comprenant :
 1. "Bureau" (Achat & Vente d'Or en lingot - cotation, pureté 24k/22k, stocks physiques, transactions)

@@ -14,7 +14,8 @@ export interface User {
   id: string;
   name: string;
   role: UserRole;
-  department?: 'Bureau' | 'Restaurant' | 'Services diverses' | 'Fondation Ilyassa' | 'Global';
+  department?: string;
+  departments?: string[];
   avatar: string;
   email: string;
   title: string;
@@ -31,6 +32,14 @@ export interface GoldTransaction {
   clientOrSupplier: string;
   date: string;
   status: 'Validé' | 'En attente' | 'Clôturé';
+}
+
+export interface GoldExpense {
+  id: string;
+  category: 'Transport & Logistique' | 'Frais de fonderie' | 'Salaires & Collecteurs' | 'Fonctionnement Bureau' | 'Autre';
+  description: string;
+  amount: number;
+  date: string;
 }
 
 export interface RestaurantTransaction {
@@ -52,6 +61,14 @@ export interface DiverseServiceRequest {
   date: string;
 }
 
+export interface DiverseServiceExpense {
+  id: string;
+  category: 'Logistique & Carburant' | 'Honoraires & Experts' | 'Frais Administratifs' | 'Maintenance' | 'Autre';
+  description: string;
+  amount: number;
+  date: string;
+}
+
 export interface FoundationProject {
   id: string;
   title: string;
@@ -61,6 +78,14 @@ export interface FoundationProject {
   beneficiaries: number;
   status: 'En cours' | 'Terminé' | 'Planifié';
   category: 'Éducation' | 'Santé' | 'Eau potable' | 'Social';
+}
+
+export interface FoundationExpense {
+  id: string;
+  category: 'Logistique humanitaire' | 'Achats matériel / kits' | 'Frais administratifs' | 'Mission terrain' | 'Autre';
+  description: string;
+  amount: number;
+  date: string;
 }
 
 export interface FoundationDonation {
@@ -80,3 +105,31 @@ export interface AuditLog {
   action: string;
   department: string;
 }
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'approval';
+  department: string;
+  timestamp: string;
+  read: boolean;
+  targetId?: string;
+  amount?: number;
+}
+
+export interface ApprovalConfig {
+  [departmentKey: string]: {
+    enabled: boolean;
+    thresholdAmount: number; // in XOF / currency
+  };
+}
+
+export interface TreasuryAccount {
+  id: string;
+  department: string;
+  accountName: string;
+  balance: number;
+  currency: string;
+}
+

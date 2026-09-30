@@ -1,4 +1,4 @@
-import { User, GoldTransaction, RestaurantTransaction, DiverseServiceRequest, FoundationProject, FoundationDonation, AuditLog } from './types';
+import { User, GoldTransaction, GoldExpense, RestaurantTransaction, DiverseServiceRequest, DiverseServiceExpense, FoundationProject, FoundationExpense, FoundationDonation, AuditLog } from './types';
 
 export const INITIAL_USERS: User[] = [
   {
@@ -6,6 +6,7 @@ export const INITIAL_USERS: User[] = [
     name: 'ABYFOU',
     role: 'admin',
     department: 'Global',
+    departments: ['Global'],
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
     email: 'admin@bureaucentral.com',
     title: 'Super Administrateur & Sécurité',
@@ -15,11 +16,17 @@ export const INITIAL_USERS: User[] = [
 
 export const INITIAL_GOLD_TRANSACTIONS: GoldTransaction[] = [];
 
+export const INITIAL_GOLD_EXPENSES: GoldExpense[] = [];
+
 export const INITIAL_RESTAURANT_TRANSACTIONS: RestaurantTransaction[] = [];
 
 export const INITIAL_SERVICES_REQUESTS: DiverseServiceRequest[] = [];
 
+export const INITIAL_SERVICES_EXPENSES: DiverseServiceExpense[] = [];
+
 export const INITIAL_FOUNDATION_PROJECTS: FoundationProject[] = [];
+
+export const INITIAL_FOUNDATION_EXPENSES: FoundationExpense[] = [];
 
 export const INITIAL_FOUNDATION_DONATIONS: FoundationDonation[] = [];
 

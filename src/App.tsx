@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { 
   INITIAL_USERS, 
   INITIAL_GOLD_TRANSACTIONS, 
+  INITIAL_GOLD_EXPENSES,
   INITIAL_RESTAURANT_TRANSACTIONS, 
   INITIAL_SERVICES_REQUESTS, 
+  INITIAL_SERVICES_EXPENSES,
   INITIAL_FOUNDATION_PROJECTS, 
+  INITIAL_FOUNDATION_EXPENSES,
   INITIAL_FOUNDATION_DONATIONS, 
   INITIAL_AUDIT_LOGS 
 } from './mockData';
-import { User, GoldTransaction, RestaurantTransaction, DiverseServiceRequest, FoundationProject, AuditLog } from './types';
+import { User, GoldTransaction, GoldExpense, RestaurantTransaction, DiverseServiceRequest, DiverseServiceExpense, FoundationProject, FoundationExpense, AuditLog, AppNotification, ApprovalConfig, TreasuryAccount } from './types';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { GlobalDashboard } from './components/GlobalDashboard';
@@ -19,6 +22,8 @@ import { FondationIlyassaView } from './components/FondationIlyassaView';
 import { RoleManagementModal } from './components/RoleManagementModal';
 import { AiAssistantModal } from './components/AiAssistantModal';
 import { UserManualModal } from './components/UserManualModal';
+import { TreasuryModal } from './components/TreasuryModal';
+import { ApprovalConfigModal } from './components/ApprovalConfigModal';
 import { LoginView } from './components/LoginView';
 import { Lock } from 'lucide-react';
 import { signOut } from 'firebase/auth';
@@ -38,13 +43,16 @@ export default function App() {
   };
   const [users, setUsers] = useState<User[]>(() => {
     const savedVersion = localStorage.getItem('bureau_app_version');
-    if (savedVersion !== '2.10') {
-      localStorage.setItem('bureau_app_version', '2.10');
+    if (savedVersion !== '2.12') {
+      localStorage.setItem('bureau_app_version', '2.12');
       localStorage.removeItem('bureau_users');
       localStorage.removeItem('bureau_gold_transactions');
+      localStorage.removeItem('bureau_gold_expenses');
       localStorage.removeItem('bureau_restaurant_transactions');
       localStorage.removeItem('bureau_diverse_services');
+      localStorage.removeItem('bureau_diverse_expenses');
       localStorage.removeItem('bureau_foundation_projects');
+      localStorage.removeItem('bureau_foundation_expenses');
       return INITIAL_USERS;
     }
     const saved = localStorage.getItem('bureau_users');
@@ -66,6 +74,10 @@ export default function App() {
     const saved = localStorage.getItem('bureau_gold_transactions');
     return saved ? JSON.parse(saved) : INITIAL_GOLD_TRANSACTIONS;
   });
+  const [goldExpenses, setGoldExpenses] = useState<GoldExpense[]>(() => {
+    const saved = localStorage.getItem('bureau_gold_expenses');
+    return saved ? JSON.parse(saved) : INITIAL_GOLD_EXPENSES;
+  });
   const [restaurantTransactions, setRestaurantTransactions] = useState<RestaurantTransaction[]>(() => {
     const saved = localStorage.getItem('bureau_restaurant_transactions');
     return saved ? JSON.parse(saved) : INITIAL_RESTAURANT_TRANSACTIONS;
@@ -74,15 +86,109 @@ export default function App() {
     const saved = localStorage.getItem('bureau_diverse_services');
     return saved ? JSON.parse(saved) : INITIAL_SERVICES_REQUESTS;
   });
+  const [diverseExpenses, setDiverseExpenses] = useState<DiverseServiceExpense[]>(() => {
+    const saved = localStorage.getItem('bureau_diverse_expenses');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICES_EXPENSES;
+  });
   const [foundationProjects, setFoundationProjects] = useState<FoundationProject[]>(() => {
     const saved = localStorage.getItem('bureau_foundation_projects');
     return saved ? JSON.parse(saved) : INITIAL_FOUNDATION_PROJECTS;
+  });
+  const [foundationExpenses, setFoundationExpenses] = useState<FoundationExpense[]>(() => {
+    const saved = localStorage.getItem('bureau_foundation_expenses');
+    return saved ? JSON.parse(saved) : INITIAL_FOUNDATION_EXPENSES;
   });
   const [foundationDonations] = useState(INITIAL_FOUNDATION_DONATIONS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
     const saved = localStorage.getItem('bureau_audit_logs');
     return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
   });
+
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    const saved = localStorage.getItem('bureau_notifications');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 'n-1',
+        title: 'Système Opérationnel',
+        message: 'Bienvenue sur BureauCentral. Tous les départements sont synchronisés.',
+        type: 'success',
+        department: 'Global',
+        timestamp: 'Aujourd\'hui',
+        read: false
+      }
+    ];
+  });
+
+  const [approvalConfig, setApprovalConfig] = useState<ApprovalConfig>(() => {
+    const saved = localStorage.getItem('bureau_approval_config');
+    return saved ? JSON.parse(saved) : {
+      'Bureau': { enabled: true, thresholdAmount: 500000 },
+      'Restaurant': { enabled: true, thresholdAmount: 150000 },
+      'Services diverses': { enabled: true, thresholdAmount: 200000 },
+      'Fondation Ilyassa': { enabled: true, thresholdAmount: 300000 }
+    };
+  });
+
+  const [treasuryAccounts, setTreasuryAccounts] = useState<TreasuryAccount[]>(() => {
+    const saved = localStorage.getItem('bureau_treasury_accounts');
+    return saved ? JSON.parse(saved) : [
+      { id: 'acc-1', department: "Bureau d'Or", accountName: 'Caisse Principale Or & Espèces', balance: 14500000, currency: 'XOF' },
+      { id: 'acc-2', department: 'Restaurant', accountName: 'Compte Recettes Restaurant', balance: 3200000, currency: 'XOF' },
+      { id: 'acc-3', department: 'Services Divers', accountName: 'Caisse Prestations & Consulting', balance: 6800000, currency: 'XOF' },
+      { id: 'acc-4', department: 'Fondation Ilyassa', accountName: 'Fonds Humanitaires & Dons', balance: 9500000, currency: 'XOF' }
+    ];
+  });
+
+  const [isTreasuryModalOpen, setIsTreasuryModalOpen] = useState(false);
+  const [isApprovalConfigModalOpen, setIsApprovalConfigModalOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('bureau_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('bureau_approval_config', JSON.stringify(approvalConfig));
+  }, [approvalConfig]);
+
+  useEffect(() => {
+    localStorage.setItem('bureau_treasury_accounts', JSON.stringify(treasuryAccounts));
+  }, [treasuryAccounts]);
+
+  const addNotification = (title: string, message: string, department: string, type: 'info' | 'warning' | 'success' | 'approval' = 'info') => {
+    const newNotif: AppNotification = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title,
+      message,
+      department,
+      type,
+      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      read: false
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const updateTreasuryBalance = (departmentName: string, amountChange: number) => {
+    setTreasuryAccounts(prev => prev.map(acc => {
+      if (acc.department.toLowerCase().includes(departmentName.toLowerCase()) || departmentName.toLowerCase().includes(acc.department.toLowerCase())) {
+        return { ...acc, balance: acc.balance + amountChange };
+      }
+      return acc;
+    }));
+  };
+
+  const checkApprovalNeeded = (department: string, amount: number): boolean => {
+    const cfg = approvalConfig[department];
+    if (cfg && cfg.enabled && amount >= cfg.thresholdAmount) {
+      addNotification(
+        `Validation PDG Requise (${department})`,
+        `Dépense de ${amount.toLocaleString()} FCFA supérieure au seuil (${cfg.thresholdAmount.toLocaleString()} FCFA). En attente d'approbation.`,
+        department,
+        'approval'
+      );
+      return true;
+    }
+    return false;
+  };
 
   useEffect(() => {
     localStorage.setItem('bureau_users', JSON.stringify(users));
@@ -93,6 +199,10 @@ export default function App() {
   }, [goldTransactions]);
 
   useEffect(() => {
+    localStorage.setItem('bureau_gold_expenses', JSON.stringify(goldExpenses));
+  }, [goldExpenses]);
+
+  useEffect(() => {
     localStorage.setItem('bureau_restaurant_transactions', JSON.stringify(restaurantTransactions));
   }, [restaurantTransactions]);
 
@@ -101,8 +211,16 @@ export default function App() {
   }, [diverseServices]);
 
   useEffect(() => {
+    localStorage.setItem('bureau_diverse_expenses', JSON.stringify(diverseExpenses));
+  }, [diverseExpenses]);
+
+  useEffect(() => {
     localStorage.setItem('bureau_foundation_projects', JSON.stringify(foundationProjects));
   }, [foundationProjects]);
+
+  useEffect(() => {
+    localStorage.setItem('bureau_foundation_expenses', JSON.stringify(foundationExpenses));
+  }, [foundationExpenses]);
 
   useEffect(() => {
     localStorage.setItem('bureau_audit_logs', JSON.stringify(auditLogs));
@@ -128,6 +246,11 @@ export default function App() {
     const newTx: GoldTransaction = { ...t, id: `gt-${Date.now()}` };
     setGoldTransactions([newTx, ...goldTransactions]);
     addAuditLog(`Ajout transaction ${t.type} (${t.weightKg} kg)`, 'Bureau');
+    if (t.type === 'vente') {
+      updateTreasuryBalance("Bureau d'Or", t.totalAmount);
+    } else {
+      updateTreasuryBalance("Bureau d'Or", -t.totalAmount);
+    }
   };
 
   const handleUpdateGoldTransaction = (updated: GoldTransaction) => {
@@ -140,22 +263,68 @@ export default function App() {
     addAuditLog(`Suppression transaction ${id}`, 'Bureau');
   };
 
+  const handleAddGoldExpense = (e: Omit<GoldExpense, 'id'>) => {
+    checkApprovalNeeded('Bureau', e.amount);
+    const newExp: GoldExpense = { ...e, id: `gexp-${Date.now()}` };
+    setGoldExpenses([newExp, ...goldExpenses]);
+    addAuditLog(`Bureau d'Or: Ajout dépense (${e.category} - ${e.amount.toLocaleString()} FCFA)`, 'Bureau');
+    updateTreasuryBalance("Bureau d'Or", -e.amount);
+  };
+
+  const handleDeleteGoldExpense = (id: string) => {
+    setGoldExpenses(prev => prev.filter(e => e.id !== id));
+    addAuditLog(`Bureau d'Or: Suppression dépense ${id}`, 'Bureau');
+  };
+
   const handleAddRestaurantTransaction = (t: Omit<RestaurantTransaction, 'id'>) => {
     const newTx: RestaurantTransaction = { ...t, id: `rt-${Date.now()}` };
     setRestaurantTransactions([newTx, ...restaurantTransactions]);
     addAuditLog(`Restaurant: Ajout ${t.type} (${t.category} - ${t.amount.toLocaleString()} FCFA)`, 'Restaurant');
+    if (t.type === 'recette') {
+      updateTreasuryBalance('Restaurant', t.amount);
+    } else {
+      checkApprovalNeeded('Restaurant', t.amount);
+      updateTreasuryBalance('Restaurant', -t.amount);
+    }
   };
 
   const handleAddServiceRequest = (req: Omit<DiverseServiceRequest, 'id'>) => {
     const newReq: DiverseServiceRequest = { ...req, id: `dsr-${Date.now()}` };
     setDiverseServices([newReq, ...diverseServices]);
     addAuditLog(`Nouveau dossier service divers: ${req.clientName}`, 'Services diverses');
+    updateTreasuryBalance('Services Divers', req.amount);
+  };
+
+  const handleAddDiverseExpense = (e: Omit<DiverseServiceExpense, 'id'>) => {
+    checkApprovalNeeded('Services diverses', e.amount);
+    const newExp: DiverseServiceExpense = { ...e, id: `dexp-${Date.now()}` };
+    setDiverseExpenses([newExp, ...diverseExpenses]);
+    addAuditLog(`Services Divers: Ajout dépense (${e.category} - ${e.amount.toLocaleString()} FCFA)`, 'Services diverses');
+    updateTreasuryBalance('Services Divers', -e.amount);
+  };
+
+  const handleDeleteDiverseExpense = (id: string) => {
+    setDiverseExpenses(prev => prev.filter(e => e.id !== id));
+    addAuditLog(`Services Divers: Suppression dépense ${id}`, 'Services diverses');
   };
 
   const handleAddFoundationProject = (p: Omit<FoundationProject, 'id'>) => {
     const newProj: FoundationProject = { ...p, id: `fp-${Date.now()}` };
     setFoundationProjects([newProj, ...foundationProjects]);
     addAuditLog(`Lancement projet humanitaire: ${p.title}`, 'Fondation Ilyassa');
+  };
+
+  const handleAddFoundationExpense = (e: Omit<FoundationExpense, 'id'>) => {
+    checkApprovalNeeded('Fondation Ilyassa', e.amount);
+    const newExp: FoundationExpense = { ...e, id: `fexp-${Date.now()}` };
+    setFoundationExpenses([newExp, ...foundationExpenses]);
+    addAuditLog(`Fondation Ilyassa: Ajout dépense (${e.category} - ${e.amount.toLocaleString()} FCFA)`, 'Fondation Ilyassa');
+    updateTreasuryBalance('Fondation Ilyassa', -e.amount);
+  };
+
+  const handleDeleteFoundationExpense = (id: string) => {
+    setFoundationExpenses(prev => prev.filter(e => e.id !== id));
+    addAuditLog(`Fondation Ilyassa: Suppression dépense ${id}`, 'Fondation Ilyassa');
   };
 
   const addAuditLog = (action: string, department: string) => {
@@ -237,8 +406,15 @@ export default function App() {
         onOpenRoleModal={() => setIsRoleModalOpen(true)}
         onOpenAiModal={() => setIsAiModalOpen(true)}
         onOpenManualModal={() => setIsManualModalOpen(true)}
+        onOpenTreasuryModal={() => setIsTreasuryModalOpen(true)}
+        onOpenApprovalConfigModal={() => setIsApprovalConfigModalOpen(true)}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         activeDepartmentLabel={getActiveDepartmentLabel()}
+        notifications={notifications}
+        onMarkNotificationRead={(id) => {
+          setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+        }}
+        onClearNotifications={() => setNotifications([])}
         onLogout={handleLogout}
       />
 
@@ -276,9 +452,12 @@ export default function App() {
                 {activeTab === 'global_dashboard' && (
                   <GlobalDashboard
                     goldTransactions={goldTransactions}
+                    goldExpenses={goldExpenses}
                     restaurantTransactions={restaurantTransactions}
                     diverseServices={diverseServices}
+                    diverseExpenses={diverseExpenses}
                     foundationProjects={foundationProjects}
+                    foundationExpenses={foundationExpenses}
                     auditLogs={auditLogs}
                     onNavigateTab={setActiveTab}
                     onOpenAiModal={() => setIsAiModalOpen(true)}
@@ -289,9 +468,12 @@ export default function App() {
                 {activeTab === 'bureau_or' && (
                   <BureauGoldView
                     transactions={goldTransactions}
+                    expenses={goldExpenses}
                     onAddTransaction={handleAddGoldTransaction}
                     onUpdateTransaction={handleUpdateGoldTransaction}
                     onDeleteTransaction={handleDeleteGoldTransaction}
+                    onAddExpense={handleAddGoldExpense}
+                    onDeleteExpense={handleDeleteGoldExpense}
                     currentUser={currentUser}
                   />
                 )}
@@ -342,15 +524,23 @@ export default function App() {
                 {activeTab === 'services_divers' && (
                   <ServicesDiversView
                     requests={diverseServices}
+                    expenses={diverseExpenses}
                     onAddRequest={handleAddServiceRequest}
+                    onAddExpense={handleAddDiverseExpense}
+                    onDeleteExpense={handleDeleteDiverseExpense}
+                    currentUser={currentUser}
                   />
                 )}
 
                 {activeTab === 'fondation_ilyassa' && (
                   <FondationIlyassaView
                     projects={foundationProjects}
+                    expenses={foundationExpenses}
                     donations={foundationDonations}
                     onAddProject={handleAddFoundationProject}
+                    onAddExpense={handleAddFoundationExpense}
+                    onDeleteExpense={handleDeleteFoundationExpense}
+                    currentUser={currentUser}
                   />
                 )}
 
@@ -443,6 +633,29 @@ export default function App() {
         isOpen={isManualModalOpen}
         onClose={() => setIsManualModalOpen(false)}
       />
+
+      {isTreasuryModalOpen && (
+        <TreasuryModal
+          accounts={treasuryAccounts}
+          onUpdateAccount={(updatedAcc) => {
+            setTreasuryAccounts(prev => prev.map(a => a.id === updatedAcc.id ? updatedAcc : a));
+            addAuditLog(`Mise à jour du solde du compte ${updatedAcc.accountName} (${updatedAcc.balance.toLocaleString()} XOF)`, updatedAcc.department);
+          }}
+          onClose={() => setIsTreasuryModalOpen(false)}
+          isAdmin={currentUser.role === 'admin' || currentUser.role === 'pdg'}
+        />
+      )}
+
+      {isApprovalConfigModalOpen && (
+        <ApprovalConfigModal
+          config={approvalConfig}
+          onSaveConfig={(newCfg) => {
+            setApprovalConfig(newCfg);
+            addAuditLog('Mise à jour de la configuration des seuils de validation PDG', 'Administration');
+          }}
+          onClose={() => setIsApprovalConfigModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

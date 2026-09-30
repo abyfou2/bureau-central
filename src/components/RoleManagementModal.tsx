@@ -26,12 +26,22 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
   // Form states
+  const AVATAR_PRESETS = [
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
+  ];
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [title, setTitle] = useState('');
   const [role, setRole] = useState<UserRole>('bureau_manager');
-  const [department, setDepartment] = useState<'Bureau' | 'Restaurant' | 'Services diverses' | 'Fondation Ilyassa' | 'Global'>('Bureau');
+  const [departments, setDepartments] = useState<string[]>(['Bureau']);
   const [password, setPassword] = useState('1234');
+  const [avatar, setAvatar] = useState(AVATAR_PRESETS[0]);
 
   // Password Prompt Modal for account switching
   const [targetSwitchUser, setTargetSwitchUser] = useState<User | null>(null);
@@ -44,9 +54,18 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
     setEmail(user.email);
     setTitle(user.title);
     setRole(user.role);
-    setDepartment(user.department || 'Global');
+    setDepartments(user.departments || (user.department ? [user.department] : ['Global']));
     setPassword(user.password || '1234');
+    setAvatar(user.avatar || AVATAR_PRESETS[0]);
     setShowAddForm(true);
+  };
+
+  const toggleDepartment = (dept: string) => {
+    if (departments.includes(dept)) {
+      setDepartments(departments.filter(d => d !== dept));
+    } else {
+      setDepartments([...departments, dept]);
+    }
   };
 
   const handleSaveUser = (e: React.FormEvent) => {
@@ -59,10 +78,11 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
         name,
         email,
         role,
-        department,
+        department: departments[0] || 'Global',
+        departments,
         title: title || 'Collaborateur',
         password,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
+        avatar
       });
       setEditingUserId(null);
     } else {
@@ -71,10 +91,11 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
         name,
         email,
         role,
-        department,
+        department: departments[0] || 'Global',
+        departments,
         title: title || 'Collaborateur',
         password,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
+        avatar
       };
       onAddUser(newUser);
     }
@@ -82,7 +103,9 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
     setName('');
     setEmail('');
     setTitle('');
+    setDepartments(['Bureau']);
     setPassword('1234');
+    setAvatar(AVATAR_PRESETS[0]);
     setShowAddForm(false);
   };
 
@@ -178,7 +201,7 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">Rôle</label>
                 <select
@@ -197,20 +220,6 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Département</label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value as any)}
-                  className="w-full px-2 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-amber-500"
-                >
-                  <option value="Bureau">Bureau</option>
-                  <option value="Restaurant">Restaurant</option>
-                  <option value="Services diverses">Services Divers</option>
-                  <option value="Fondation Ilyassa">Fondation</option>
-                  <option value="Global">Global</option>
-                </select>
-              </div>
-              <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">Mot de passe (Sécurité)</label>
                 <input
                   type="text"
@@ -220,6 +229,52 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
                   placeholder="1234"
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono outline-none focus:ring-2 focus:ring-amber-500"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Départements Gérés (Multi-sélection)</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white p-3 rounded-lg border border-slate-200">
+                {['Bureau', 'Restaurant', 'Services diverses', 'Fondation Ilyassa', 'Global'].map((dept) => (
+                  <label key={dept} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={departments.includes(dept)}
+                      onChange={() => toggleDepartment(dept)}
+                      className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5"
+                    />
+                    <span>{dept === 'Services diverses' ? 'Services Divers' : dept === 'Fondation Ilyassa' ? 'Fondation' : dept}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Avatar / Photo de profil</label>
+              <div className="flex items-center gap-3">
+                <img src={avatar} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-amber-500 shadow-sm" />
+                <div className="flex-1 space-y-1">
+                  <input
+                    type="text"
+                    value={avatar}
+                    onChange={(e) => setAvatar(e.target.value)}
+                    placeholder="URL de l'image (https://...)"
+                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                  />
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className="text-[10px] text-slate-400">Préréglages :</span>
+                    {AVATAR_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setAvatar(preset)}
+                        className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-transform hover:scale-110 ${avatar === preset ? 'border-amber-600 scale-110' : 'border-transparent'}`}
+                      >
+                        <img src={preset} alt="preset" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -274,9 +329,13 @@ export const RoleManagementModal: React.FC<RoleManagementModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
-                    {user.department || 'Global'}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap max-w-xs justify-end">
+                    {(user.departments || [user.department || 'Global']).map((d, i) => (
+                      <span key={i} className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                        {d}
+                      </span>
+                    ))}
+                  </div>
 
                   {isAdmin && (
                     <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">

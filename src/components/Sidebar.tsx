@@ -27,42 +27,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen
 }) => {
   const isGlobalUser = currentUser.role === 'pdg' || currentUser.role === 'admin';
-  const isAgent = currentUser.role.includes('_agent');
+  const userDepts = currentUser.departments || (currentUser.department ? [currentUser.department] : []);
+  const hasDept = (dept: string) => isGlobalUser || userDepts.includes(dept) || userDepts.includes('Global');
 
   const menuItems = [
     {
       id: 'global_dashboard',
       label: 'Tableau de Bord Général',
       icon: LayoutDashboard,
-      allowed: isGlobalUser,
+      allowed: userDepts.length > 0 || isGlobalUser,
       department: 'Global'
     },
     {
       id: 'bureau_or',
       label: 'Bureau d\'Or',
       icon: Coins,
-      allowed: isGlobalUser || currentUser.department === 'Bureau',
+      allowed: hasDept('Bureau'),
       department: 'Bureau'
     },
     {
       id: 'restaurant',
       label: 'Restaurant & Traiteur',
       icon: UtensilsCrossed,
-      allowed: isGlobalUser || currentUser.department === 'Restaurant',
+      allowed: hasDept('Restaurant'),
       department: 'Restaurant'
     },
     {
       id: 'services_divers',
       label: 'Services Divers',
       icon: Briefcase,
-      allowed: isGlobalUser || currentUser.department === 'Services diverses',
+      allowed: hasDept('Services diverses'),
       department: 'Services diverses'
     },
     {
       id: 'fondation_ilyassa',
       label: 'Fondation Ilyassa',
       icon: HeartHandshake,
-      allowed: isGlobalUser || currentUser.department === 'Fondation Ilyassa',
+      allowed: hasDept('Fondation Ilyassa'),
       department: 'Fondation Ilyassa'
     },
     {

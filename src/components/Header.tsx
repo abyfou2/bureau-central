@@ -1,14 +1,19 @@
-import React from 'react';
-import { User, UserRole } from '../types';
-import { Shield, Sparkles, UserCheck, LogOut, Menu, Bell, BookOpen } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, UserRole, AppNotification } from '../types';
+import { Shield, Sparkles, UserCheck, LogOut, Menu, Bell, BookOpen, Wallet, Sliders, CheckCircle, X, AlertTriangle } from 'lucide-react';
 
 interface HeaderProps {
   currentUser: User;
   onOpenRoleModal: () => void;
   onOpenAiModal: () => void;
   onOpenManualModal: () => void;
+  onOpenTreasuryModal: () => void;
+  onOpenApprovalConfigModal: () => void;
   onToggleSidebar: () => void;
   activeDepartmentLabel: string;
+  notifications: AppNotification[];
+  onMarkNotificationRead: (id: string) => void;
+  onClearNotifications: () => void;
   onLogout: () => void;
 }
 
@@ -17,10 +22,18 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenRoleModal,
   onOpenAiModal,
   onOpenManualModal,
+  onOpenTreasuryModal,
+  onOpenApprovalConfigModal,
   onToggleSidebar,
   activeDepartmentLabel,
+  notifications,
+  onMarkNotificationRead,
+  onClearNotifications,
   onLogout
 }) => {
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case 'pdg': return 'bg-amber-100 text-amber-900 border-amber-300';
@@ -32,6 +45,8 @@ export const Header: React.FC<HeaderProps> = ({
       default: return 'bg-slate-100 text-slate-800 border-slate-300';
     }
   };
+
+  const isAdminOrPdg = currentUser.role === 'admin' || currentUser.role === 'pdg';
 
   return (
     <header className="h-18 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
@@ -55,7 +70,103 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
+        {/* Treasury Button */}
+        <button
+          onClick={onOpenTreasuryModal}
+          className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg shadow-xs transition-all font-medium text-xs"
+          title="Trésorerie & Soldes de Caisse"
+        >
+          <Wallet className="w-4 h-4 text-emerald-600" />
+          <span className="hidden lg:inline">Trésorerie</span>
+        </button>
+
+        {/* Approval Config (Admin / PDG) */}
+        {isAdminOrPdg && (
+          <button
+            onClick={onOpenApprovalConfigModal}
+            className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-lg shadow-xs transition-all font-medium text-xs"
+            title="Configuration des seuils de validation PDG"
+          >
+            <Sliders className="w-4 h-4 text-purple-600" />
+            <span className="hidden lg:inline">Seuils Validation</span>
+          </button>
+        )}
+
+        {/* Notifications Bell */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+            className="p-2 text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl relative transition-colors"
+            title="Notifications & Alertes"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs animate-bounce">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Notifications Dropdown */}
+          {showNotificationsDropdown && (
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+              <div className="p-3.5 bg-slate-900 text-white flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold font-serif">Centre de Notifications</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={onClearNotifications}
+                      className="text-[10px] text-slate-300 hover:text-white underline"
+                    >
+                      Tout effacer
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowNotificationsDropdown(false)}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-400">
+                    Aucune notification pour le moment.
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => onMarkNotificationRead(n.id)}
+                      className={`p-3 text-xs transition-colors cursor-pointer hover:bg-slate-50 ${n.read ? 'bg-white opacity-70' : 'bg-amber-50/40'}`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-slate-900">{n.title}</span>
+                        <span className="text-[10px] text-slate-400">{n.timestamp}</span>
+                      </div>
+                      <p className="text-slate-600 mb-1">{n.message}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                          {n.department}
+                        </span>
+                        {!n.read && (
+                          <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* User Manual Button */}
         <button
           onClick={onOpenManualModal}
@@ -106,3 +217,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

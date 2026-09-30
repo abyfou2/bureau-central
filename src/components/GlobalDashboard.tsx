@@ -1,9 +1,12 @@
 import React from 'react';
 import { 
   GoldTransaction, 
+  GoldExpense,
   RestaurantTransaction, 
   DiverseServiceRequest, 
+  DiverseServiceExpense,
   FoundationProject, 
+  FoundationExpense,
   AuditLog 
 } from '../types';
 import { 
@@ -21,9 +24,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieCha
 
 interface GlobalDashboardProps {
   goldTransactions: GoldTransaction[];
+  goldExpenses: GoldExpense[];
   restaurantTransactions: RestaurantTransaction[];
   diverseServices: DiverseServiceRequest[];
+  diverseExpenses: DiverseServiceExpense[];
   foundationProjects: FoundationProject[];
+  foundationExpenses: FoundationExpense[];
   auditLogs: AuditLog[];
   onNavigateTab: (tab: string) => void;
   onOpenAiModal: () => void;
@@ -32,9 +38,12 @@ interface GlobalDashboardProps {
 
 export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
   goldTransactions,
+  goldExpenses,
   restaurantTransactions,
   diverseServices,
+  diverseExpenses,
   foundationProjects,
+  foundationExpenses,
   auditLogs,
   onNavigateTab,
   onOpenAiModal,
@@ -42,13 +51,19 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
 }) => {
   const totalGoldKg = goldTransactions.reduce((acc, t) => t.type === 'achat' ? acc + t.weightKg : acc - t.weightKg, 0);
   const goldRevenue = goldTransactions.filter(t => t.type === 'vente').reduce((acc, t) => acc + t.totalAmount, 0);
+  const goldPurchaseAmount = goldTransactions.filter(t => t.type === 'achat').reduce((acc, t) => acc + t.totalAmount, 0);
+  const goldExpensesAmount = goldExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const goldNetProfit = goldRevenue - goldPurchaseAmount - goldExpensesAmount;
   
   const restaurantRecettes = restaurantTransactions.filter(t => t.type === 'recette').reduce((acc, t) => acc + t.amount, 0);
   const restaurantDepenses = restaurantTransactions.filter(t => t.type === 'depense').reduce((acc, t) => acc + t.amount, 0);
   
-  const servicesRevenue = diverseServices.filter(s => s.status === 'Traité' || s.status === 'Facturé' || s.status === 'En cours').reduce((acc, s) => acc + s.amount, 0);
+  const servicesRevenue = diverseServices.reduce((acc, s) => acc + s.amount, 0);
+  const servicesExpensesAmount = diverseExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const servicesNetProfit = servicesRevenue - servicesExpensesAmount;
   
   const foundationBeneficiaries = foundationProjects.reduce((acc, p) => acc + p.beneficiaries, 0);
+  const foundationExpensesAmount = foundationExpenses.reduce((acc, e) => acc + e.amount, 0);
 
   const totalRevenue = goldRevenue + restaurantRecettes + servicesRevenue;
 
@@ -112,7 +127,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             <div class="kpi-card">
               <div class="kpi-title">Bureau d'Or & Lingots</div>
               <div class="kpi-value">${totalGoldKg.toFixed(1)} kg</div>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #475569;">CA Ventes : ${goldRevenue.toLocaleString()} FCFA</p>
+              <p style="margin: 5px 0 0; font-size: 12px; color: #475569;">Achats : ${goldPurchaseAmount.toLocaleString()} FCFA<br>Ventes : ${goldRevenue.toLocaleString()} FCFA<br>Dépenses : ${goldExpensesAmount.toLocaleString()} FCFA<br><b>Bénéfice Net : ${goldNetProfit.toLocaleString()} FCFA</b></p>
             </div>
             <div class="kpi-card">
               <div class="kpi-title">Restaurant (Recettes)</div>
@@ -121,8 +136,8 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             </div>
             <div class="kpi-card">
               <div class="kpi-title">Services Divers</div>
-              <div class="kpi-value">${(servicesRevenue / 1000000).toFixed(1)}M FCFA</div>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #475569;">Dossiers en cours : ${diverseServices.length}</p>
+              <div class="kpi-value">${(servicesRevenue / 1000000).toFixed(2)}M FCFA</div>
+              <p style="margin: 5px 0 0; font-size: 12px; color: #475569;">Dépenses : ${servicesExpensesAmount.toLocaleString()} FCFA<br><b>Bénéfice Net : ${servicesNetProfit.toLocaleString()} FCFA</b></p>
             </div>
             <div class="kpi-card">
               <div class="kpi-title">Fondation Ilyassa</div>
@@ -206,7 +221,12 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
           <h3 className="text-2xl font-bold font-mono tabular-nums text-slate-900 mb-2">
             {totalGoldKg.toFixed(1)} <span className="text-sm font-sans font-normal text-slate-500">kg en réserve</span>
           </h3>
-          <p className="text-xs text-slate-600">CA Ventes : <span className="font-semibold text-slate-900 font-mono">{goldRevenue.toLocaleString()} FCFA</span></p>
+          <div className="space-y-1 text-xs text-slate-600 border-t border-slate-100 pt-2 mt-2">
+            <p>Achats : <span className="font-semibold text-amber-800 font-mono">{goldPurchaseAmount.toLocaleString()} FCFA</span></p>
+            <p>Ventes : <span className="font-semibold text-slate-900 font-mono">{goldRevenue.toLocaleString()} FCFA</span></p>
+            <p>Dépenses : <span className="font-semibold text-rose-700 font-mono">{goldExpensesAmount.toLocaleString()} FCFA</span></p>
+            <p className="pt-1 border-t border-dashed border-slate-200 font-bold">Bénéfice : <span className="text-emerald-700 font-mono">{goldNetProfit.toLocaleString()} FCFA</span></p>
+          </div>
         </div>
 
         {/* Card 2: Restaurant */}
@@ -243,10 +263,13 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
             </span>
           </div>
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Services Divers</p>
-          <h3 className="text-2xl font-bold font-mono tabular-nums text-slate-900 mb-2">
-            {(servicesRevenue / 1000000).toFixed(1)}M <span className="text-sm font-sans font-normal text-slate-500">FCFA facturés</span>
+          <h3 className="text-xl font-bold font-mono tabular-nums text-slate-900 mb-2">
+            {(servicesRevenue / 1000000).toFixed(2)}M <span className="text-xs font-sans font-normal text-slate-500">Facturé</span>
           </h3>
-          <p className="text-xs text-slate-600">Demandes en cours : <span className="font-semibold text-slate-900">{diverseServices.length} dossiers</span></p>
+          <div className="space-y-1 text-xs text-slate-600 border-t border-slate-100 pt-2">
+            <p>Dépenses : <span className="font-semibold text-rose-700 font-mono">{servicesExpensesAmount.toLocaleString()} FCFA</span></p>
+            <p className="font-bold">Bénéfice : <span className="text-emerald-700 font-mono">{servicesNetProfit.toLocaleString()} FCFA</span></p>
+          </div>
         </div>
 
         {/* Card 4: Fondation Ilyassa */}
@@ -266,7 +289,10 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
           <h3 className="text-2xl font-bold font-mono tabular-nums text-slate-900 mb-2">
             {foundationBeneficiaries.toLocaleString()} <span className="text-sm font-sans font-normal text-slate-500">bénéficiaires</span>
           </h3>
-          <p className="text-xs text-slate-600">Projets actifs : <span className="font-semibold text-slate-900">{foundationProjects.length} programmes</span></p>
+          <div className="space-y-1 text-xs text-slate-600 border-t border-slate-100 pt-2">
+            <p>Projets actifs : <span className="font-semibold text-slate-900">{foundationProjects.length} programmes</span></p>
+            <p>Dépenses / Fonctionnement : <span className="font-semibold text-rose-700 font-mono">{foundationExpensesAmount.toLocaleString()} FCFA</span></p>
+          </div>
         </div>
       </div>
 
@@ -321,7 +347,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                   outerRadius={95}
                   paddingAngle={5}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {pieData.map((entry, index) => (
