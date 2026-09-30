@@ -70,7 +70,7 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Chiffre d'Affaires Services</p>
           <h3 className="text-3xl font-bold font-mono tabular-nums text-slate-900 mb-1">
@@ -85,14 +85,6 @@ export const ServicesDiversView: React.FC<ServicesDiversViewProps> = ({
             {requests.length} <span className="text-base font-sans font-normal text-slate-500">contrats</span>
           </h3>
           <p className="text-xs text-slate-500">Clients institutionnels et privés</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Taux de Satisfaction</p>
-          <h3 className="text-3xl font-bold font-mono tabular-nums text-slate-900 mb-1">
-            99.2%
-          </h3>
-          <p className="text-xs text-emerald-600 font-medium">Conformité SLA rigoureuse</p>
         </div>
       </div>
 

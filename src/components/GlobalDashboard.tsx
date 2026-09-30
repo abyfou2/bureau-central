@@ -50,17 +50,34 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
   
   const foundationBeneficiaries = foundationProjects.reduce((acc, p) => acc + p.beneficiaries, 0);
 
+  const totalRevenue = goldRevenue + restaurantRecettes + servicesRevenue;
+
   const chartData = [
-    { name: "Bureau d'Or", montant: goldRevenue || 10000000, color: '#d97706' },
-    { name: "Restaurant", montant: restaurantRecettes || 5000000, color: '#059669' },
-    { name: "Services Divers", montant: servicesRevenue || 8000000, color: '#2563eb' },
-    { name: "Fondation Ilyassa", montant: 6000000, color: '#e11d48' },
+    { name: "Bureau d'Or", montant: goldRevenue, color: '#d97706' },
+    { name: "Restaurant", montant: restaurantRecettes, color: '#059669' },
+    { name: "Services Divers", montant: servicesRevenue, color: '#2563eb' },
+    { name: "Fondation Ilyassa", montant: 0, color: '#e11d48' },
   ];
 
   const pieData = [
-    { name: 'Bureau d\'Or', value: goldRevenue || 1, color: '#d97706' },
-    { name: 'Restaurant (Recettes)', value: restaurantRecettes || 1, color: '#059669' },
-    { name: 'Services Divers', value: servicesRevenue || 1, color: '#2563eb' },
+    { 
+      name: 'Bureau d\'Or', 
+      value: goldRevenue, 
+      percentage: totalRevenue > 0 ? Number(((goldRevenue / totalRevenue) * 100).toFixed(1)) : 0, 
+      color: '#d97706' 
+    },
+    { 
+      name: 'Restaurant', 
+      value: restaurantRecettes, 
+      percentage: totalRevenue > 0 ? Number(((restaurantRecettes / totalRevenue) * 100).toFixed(1)) : 0, 
+      color: '#059669' 
+    },
+    { 
+      name: 'Services Divers', 
+      value: servicesRevenue, 
+      percentage: totalRevenue > 0 ? Number(((servicesRevenue / totalRevenue) * 100).toFixed(1)) : 0, 
+      color: '#2563eb' 
+    },
   ];
 
   const handleExportPDF = () => {
@@ -311,7 +328,7 @@ export const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                     <Cell key={`pie-cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: any) => [`${Number(value).toLocaleString()} FCFA`, 'Valeur']} />
+                <Tooltip formatter={(value: any, name: any, item: any) => [`${Number(value).toLocaleString()} FCFA (${item.payload.percentage}%)`, 'Part']} />
               </PieChart>
             </ResponsiveContainer>
           </div>

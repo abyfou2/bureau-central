@@ -23,9 +23,9 @@ export const RestaurantView: React.FC<RestaurantViewProps> = ({
   const netSolde = totalRecettes - totalDepenses;
 
   const chartData = [
-    { name: 'Recettes', montant: totalRecettes || 100000, color: '#059669' },
-    { name: 'Dépenses', montant: totalDepenses || 50000, color: '#e11d48' },
-    { name: 'Solde Net', montant: Math.abs(netSolde) || 50000, color: netSolde >= 0 ? '#2563eb' : '#e11d48' }
+    { name: 'Recettes', montant: totalRecettes, color: '#059669' },
+    { name: 'Dépenses', montant: totalDepenses, color: '#e11d48' },
+    { name: 'Solde Net', montant: netSolde, color: netSolde >= 0 ? '#2563eb' : '#e11d48' }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
