@@ -36,6 +36,16 @@ export default function App() {
     title: 'Super Administrateur & RH'
   };
   const [users, setUsers] = useState<User[]>(() => {
+    const savedVersion = localStorage.getItem('bureau_app_version');
+    if (savedVersion !== '2.9') {
+      localStorage.setItem('bureau_app_version', '2.9');
+      localStorage.removeItem('bureau_users');
+      localStorage.removeItem('bureau_gold_transactions');
+      localStorage.removeItem('bureau_restaurant_transactions');
+      localStorage.removeItem('bureau_diverse_services');
+      localStorage.removeItem('bureau_foundation_projects');
+      return INITIAL_USERS;
+    }
     const saved = localStorage.getItem('bureau_users');
     return saved ? JSON.parse(saved) : INITIAL_USERS;
   });
@@ -50,7 +60,7 @@ export default function App() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
-  // App Data State with localStorage persistence
+  // App Data State with localStorage persistence (with version check to reset old mock data)
   const [goldTransactions, setGoldTransactions] = useState<GoldTransaction[]>(() => {
     const saved = localStorage.getItem('bureau_gold_transactions');
     return saved ? JSON.parse(saved) : INITIAL_GOLD_TRANSACTIONS;

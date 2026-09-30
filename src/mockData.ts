@@ -10,36 +10,6 @@ export const INITIAL_USERS: User[] = [
     email: 'admin@bureaucentral.com',
     title: 'Super Administrateur & Sécurité',
     password: '1234'
-  },
-  {
-    id: 'u2',
-    name: 'Promoteur / Propriétaire',
-    role: 'pdg',
-    department: 'Global',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-    email: 'pdg@bureaucentral.com',
-    title: 'Président Directeur Général (PDG)',
-    password: '1234'
-  },
-  {
-    id: 'u3',
-    name: 'Gestionnaire Bureau d\'Or',
-    role: 'bureau_manager',
-    department: 'Bureau',
-    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
-    email: 'bureau.mgr@bureaucentral.com',
-    title: 'Gestionnaire Bureau d\'Or',
-    password: '1234'
-  },
-  {
-    id: 'u4',
-    name: 'Agent Saisie Bureau Or',
-    role: 'bureau_agent',
-    department: 'Bureau',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    email: 'bureau.agent@bureaucentral.com',
-    title: 'Agent de Saisie - Bureau d\'Or',
-    password: '1234'
   }
 ];
 
